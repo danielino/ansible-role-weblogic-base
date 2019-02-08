@@ -1,0 +1,44 @@
+---
+- stat:
+    path: "{{ weblogic_directory }}"
+  register: a
+
+- name: "copy {{ weblogic_installer }}"
+  copy:
+    src: "software/{{ weblogic_installer }}"
+    dest: "{{ sw_directory }}/{{ weblogic_installer }}"
+  when: a.stat.isdir is not defined
+
+- stat:
+    path: "{{ sw_directory }}/wls-silent.xml"
+  register: wlssilent
+
+- name: "copy wls-silent.xml"
+  template:
+    src: wls-silent.xml.j2
+    dest: "{{ sw_directory }}/wls-silent.xml"
+  when: wlssilent.stat.isfile is not defined
+
+- name: "installing weblogic"
+  command: "{{ jrockit_directory }}/bin/java -d64 -Xmx1024m -jar {{ sw_directory }}/{{ weblogic_installer }} -mode=silent -silent_xml={{ sw_directory }}/wls-silent.xml -log=/var/log/wl_installer.log"
+  become_user: oracle
+  when: a.stat.isdir is not defined
+
+- name: "set directory permission"
+  file:
+    path: "{{ mountpoint }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_user }}"
+    recurse: yes
+
+- stat:
+    path: "{{ domains_directory }}"
+  register: ddir
+
+- name: "create log file for wlst cli"
+  file:
+    path: /var/log/wlst.log
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_user }}"
+    state: touch
+

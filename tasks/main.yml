@@ -1,0 +1,11 @@
+---
+# tasks file for weblogic
+- include: "{{ item }}"
+  with_items: 
+    - packages.yml
+    - device.yml
+    - user.yml
+    - jrockit.yml
+    - weblogic.yml
+    - service.yml
+    - patch.yml

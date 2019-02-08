@@ -1,0 +1,15 @@
+[Unit]
+Description=Weblogic Managed Instance
+
+[Service]
+Environment='JAVA_OPTIONS=-Dweblogic.security.SSL.ignoreHostnameVerification=true -Dweblogic.security.SSL.enforceConstraints=off'
+{% if role is defined and role == 'nodemanager' %}
+ExecStart={{ server_bin }}/startNodeManager.sh
+{% elif role is defined and role == 'adminserver' %}
+ExecStart={{ domains_directory }}/startWebLogic.sh
+{% endif %}
+User=oracle
+Group=oracle
+
+[Install]
+WantedBy=multi-user.target

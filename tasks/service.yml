@@ -1,0 +1,34 @@
+---
+- name: "configure bash_profile to load environment"
+  lineinfile:
+    name: "/home/{{ oracle_user }}/.bash_profile"
+    line: "source .wsenv"
+
+- name: "copy wsenv"
+  template: 
+    src: bash_profile.j2
+    dest: "/home/{{oracle_user}}/.wsenv"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_user }}"
+
+- name: "copy systemd template"
+  template:
+    src: systemd-unit.j2
+    dest: /etc/systemd/system/weblogic.service
+    owner: root
+
+- name: "set directory permission"
+  file: 
+    name: "{{ mountpoint }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_user }}"
+    recurse: yes
+
+- name: "enable weblogic and do a daemon-reload for systmed"
+  service:
+    name: weblogic
+    state: started
+    enabled: True
+
+- name: "do systemd reload"
+  command: systemctl daemon-reload

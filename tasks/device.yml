@@ -1,0 +1,29 @@
+---
+- stat:
+    path: "{{ device }}"
+  register: c
+
+- name: "create logical volume"
+  lvol:
+    vg: "{{ volumeGroup }}"
+    lv: "{{ logicalVolume }}"
+    size: 5g
+  when: c.stat.isblk is not defined
+
+- name: "check if file system is present"
+  command: "blkid {{ device }}"
+  register: fsstatus
+  failed_when: "False == True"
+
+- name: "create file system XFS"
+  filesystem:
+    fstype: xfs
+    dev: "{{ device }}"
+  when: fsstatus.rc == 2
+
+- name: "Mount File System"
+  mount:
+    name: "{{ mountpoint }}"
+    src: "{{ device }}"
+    fstype: xfs
+    state: mounted

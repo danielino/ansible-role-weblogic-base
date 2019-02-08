@@ -1,0 +1,64 @@
+---
+# vars file for weblogic
+
+volumeGroup: local_sw_vg
+logicalVolume: oracle_lv
+device: "/dev/{{volumeGroup}}/{{logicalVolume}}"
+mountpoint: "/sw/oracle"
+
+# general variables
+sw_directory: "{{ mountpoint }}/tmp"
+mw_directory: "{{ mountpoint }}/fusion_middleware_11"
+
+# jrockit
+jrockit_directory: /usr/java/jrockit-jdk.1.6.0_37/
+jrockit_bin_directory: "{{jrockit_directory}}/bin"
+jrockit_archive: "software/jrockit.tgz"
+
+# user and groups
+oracle_user: oracle
+oracle_user_gid: 500
+oracle_group_1: dba
+oracle_group_oinstall: oinstall
+oracle_group_oinstall_gid: 501
+oracle_group_dba: dba
+oracle_group_dba_gid: 502
+
+# weblogic
+weblogic_directory: "{{ mw_directory }}/wlserver_10.3"
+weblogic_installer: wls1036_generic.jar
+wls_template: "{{ weblogic_directory }}/common/templates/domains/wls.jar"
+
+# weblogic admin
+# weblogic_admin_{host,user,password} must be defined in playbook
+
+# patch
+patch_util_bin_directory: "{{ mw_directory }}/utils/bsu/"
+patch_directory: "{{ patch_util_bin_directory }}/cache_dir"
+patch_util_bin: "{{ patch_util_bin_directory }}/bsu.sh"
+
+# this array define the order of patch installation 
+patch_items:
+  # first applied
+  7BWI:
+    name: '9923849'
+    zip: software/wls_patch/p9923849_1036_Generic.zip
+  HMGK:
+    name: '20047315'
+    zip: software/wls_patch/p20047315_1036_Generic.zip
+
+
+# nodemanager
+nodemanager_home: "{{ weblogic_directory }}/common/nodemanager"
+
+domains_base_path: "{{ mountpoint }}/domains"
+domains_directory: "{{ domains_base_path  }}/{{ domain_name }}"
+domains_bin_directory: "{{ domains_directory }}/bin"
+
+server_bin: "{{ weblogic_directory }}/server/bin"
+
+wlst_log_file: "/var/log/wlst.log"
+
+# role can be nodemanager or adminserver
+# systemd unit ExecStart depends on this role
+role: 'nodemanager'

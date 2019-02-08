@@ -1,0 +1,10 @@
+---
+- stat:
+    path: "{{ jrockit_directory }}/bin"
+  register: p
+
+- name: "extract jrockit"
+  unarchive:
+    src: "{{jrockit_archive}}"
+    dest: "{{jrockit_directory}}"
+  when: p.stat.isdir is not defined

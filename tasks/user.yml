@@ -1,0 +1,31 @@
+---
+- name: "create oinstall group"
+  group:
+    name: "{{ oracle_group_oinstall }}"
+    state: present
+    gid: "{{ oracle_group_oinstall_gid }}"
+
+- name: "create dba group"
+  group: 
+    name: "{{ oracle_group_dba }}"
+    state: present
+    gid: "{{ oracle_group_dba_gid }}"
+
+- name: "create user"
+  user:
+    name: "{{ oracle_user }}"
+    groups: oinstall,dba
+    uid: "{{ oracle_user_gid }}"
+
+- name: "create application directory"
+  file: 
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group_oinstall }}"
+    mode: 0775
+    recurse: yes
+  with_items:
+    - "{{ mountpoint }}"
+    - "{{ sw_directory }}"
+    - "{{ jrockit_directory }}"

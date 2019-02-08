@@ -1,0 +1,28 @@
+- name: "get list of installed patches"
+  shell:
+    cmd: "{{ patch_util_bin }} -report | egrep -io 'BUG.+.jar'  | cut -d '_' -f1 | sed 's/BUG//g'"
+    chdir: "{{ patch_util_bin_directory }}"
+  register: patches
+
+- name: "ensure directory exists"
+  file:
+    path: "{{ patch_directory }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group_oinstall }}"
+    state: directory
+
+- name: "copy patch files"
+  unarchive:
+    src: "{{ item.value.zip }}"
+    dest: "{{ patch_directory }}"
+  with_dict: "{{ patch_items }}"
+  when: item.value.name not in patches.stdout_lines
+  become_user: oracle
+
+- name: "install patches"
+  shell: 
+    cmd: "{{ patch_util_bin }} -prod_dir={{ weblogic_directory }} -patchlist={{ item.key }} -install"
+    chdir: "{{ patch_util_bin_directory }}"
+  with_dict: "{{ patch_items }}"
+  when: item.value.name not in patches.stdout_lines
+  become_user: oracle
